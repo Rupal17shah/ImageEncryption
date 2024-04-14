@@ -7,10 +7,8 @@ import cv2
 import base64
 import scipy
 
-global M, N
-M = 0
-N = 0
 class Arnold:
+
     def __init__(self, a:int, b:int, rounds:int):
         # Parameters
         self.__a = a
@@ -42,7 +40,8 @@ class Arnold:
         for r in range(self.__rounds):
             img = img[xm, ym]
         return img
-
+    
+# Chirikov standard map
 # Chirikov standard map
 def generateChirikovMap(xo, yo, iter, delta, to):
     x = []
@@ -103,14 +102,14 @@ def generateKey(password):
 def encrypt(password, image):
 
     xo, yo, xo_, yo_ = generateKey(password)
-
+   
     I1 = image[:,:,0]
     I2 = image[:,:,1]
     I3 = image[:,:,2]
 
     M = I1.shape[0]
     N = I1.shape[1]
-
+    np.save('dim.npy', [M, N])
     # Generate chaotic chirikov map for vertical shift
     x3m,y1 = generateChirikovMap(xo, yo, 3*M, 0.1, 1000)
     # plot1 = plt.plot(x,y1)
@@ -120,15 +119,15 @@ def encrypt(password, image):
     # plot2 = plt.plot(x1,y)
     yn = np.array(yn)
     print(len(yn))
-
-# Generated chaotic sequence for encryption
+    # Generated chaotic sequence for encryption
+    # Generated chaotic sequence for encryption
     Xv = np.floor(x3m*1e14)%N
     Yv = np.floor(yn*1e14)%(3*M)
 
     # Combining the three indexed images
     Fv = np.concatenate((I1, I2, I3))
     actual_concat = np.copy(Fv)
-
+    
     # Performing right shift in dimension N
     for i in range(len(Xv)):
         row = Fv[i,:]
@@ -146,7 +145,7 @@ def encrypt(password, image):
 
     # Horizontal concatenation of the three channels
     Fh = np.concatenate((F1, F2, F3), axis=1)
-
+    
     F_checkh = np.copy(Fh)
 
 # Generate chaotic chirikov map for vertical shift
@@ -198,12 +197,15 @@ def encrypt(password, image):
     encrypted_img[:,:,0] = C1_AT
     encrypted_img[:,:,1] = C2_AT
     encrypted_img[:,:,2] = C3_AT
-
+    encrypted_img[-1,-1,-1] = M
+    encrypted_img[-1,-1,-2] = N
     return encrypted_img
 
 def decrypt(password, encrypted_img):
-
     xo, yo, xo_, yo_ = generateKey(password)
+    dim = np.load('dim.npy')
+    M = dim[0]
+    N = dim[1]
     iC1_AT = encrypted_img[:,:,0]
     iC2_AT = encrypted_img[:,:,1]
     iC3_AT = encrypted_img[:,:,2]
@@ -217,7 +219,7 @@ def decrypt(password, encrypted_img):
     IC1_unpad = unpadding(M, N, IC1_AT)
     IC2_unpad = unpadding(M, N, IC2_AT)
     IC3_unpad = unpadding(M, N, IC3_AT)
-
+    print(IC1_unpad.shape, IC2_unpad.shape, IC3_unpad.shape)
     iC1 = scipy.fftpack.idct(IC1_unpad, axis=0, norm='ortho', type=2)
     iC2 = scipy.fftpack.idct(IC2_unpad, axis=0, norm='ortho', type=2)
     iC3 = scipy.fftpack.idct(IC3_unpad, axis=0, norm='ortho', type=2)
@@ -227,7 +229,7 @@ def decrypt(password, encrypted_img):
     iC3 = iC3.round().astype(np.uint8)
 
     iFh = np.concatenate([iC1,iC2,iC3], axis=1)
-    print(iFh.shape)
+    # print(iFh)
 
     # Generate chaotic chirikov map for vertical shift
     ixm,y1 = generateChirikovMap(xo_, yo_, M, 0.1, 1000)
@@ -258,7 +260,7 @@ def decrypt(password, encrypted_img):
     F3 = iFh[:,2*N:3*N]
 
     Fv = np.concatenate([F1,F2,F3])
-
+    # print(Fv)
     # Generate chaotic chirikov map for vertical shift
     ix3m,y1 = generateChirikovMap(xo, yo, 3*M, 0.1, 1000)
     # plot1 = plt.plot(x,y1)

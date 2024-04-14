@@ -7,7 +7,17 @@
 </head>
 <link rel="stylesheet" href="../static/css/main.css">
 <body>
-
+    <div class="lds-ripple" style="display: none; margin: auto; position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+"><div></div><div></div></div>
+<div class="load lds-ripple" style="display: none; text-align: center; position: fixed;
+top: 65%;
+left: 50%;
+transform: translate(-50%, -50%);">
+    Please Wait! Loading...
+</div>
     <div class="container">
         <div class="header">
             <h1>Image Encryption</h1>
@@ -28,14 +38,26 @@
         
                 <input type="text" name="text" id="textInput" name="textInput" style="padding: 5px;">
                 <br>
+                <br>
+                <div class="btns">
+                    <button type="submit" class="btn" onclick="loading()">
+                    Let's Encrypt!
+                    </button>
+                  </div>
             </div>
-              <div class="btns">
-                <button type="submit" class="btn">
-                Let's Encrypt!
-                </button>
-              </div>
+              
        </form>
       <script>
+
+        function loading() {
+            var loader = document.querySelector('.lds-ripple');
+            var container = document.querySelector('.container');
+            var load = document.querySelector('.load');
+            load.style.display = 'block';
+            loader.style.display = 'block';
+            container.style.display = 'none';
+        }
+
         function displayImage(input) {
             var reader = new FileReader();
 
