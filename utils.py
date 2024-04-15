@@ -5,6 +5,7 @@ import hashlib
 import math
 import cv2
 import base64
+import os
 import scipy
 
 class Arnold:
@@ -206,6 +207,7 @@ def decrypt(password, encrypted_img):
     dim = np.load('dim.npy')
     M = dim[0]
     N = dim[1]
+    os.remove('dim.npy')
     iC1_AT = encrypted_img[:,:,0]
     iC2_AT = encrypted_img[:,:,1]
     iC3_AT = encrypted_img[:,:,2]
